@@ -100,7 +100,26 @@ $loggeduser = JFactory::getUser();
 			</tr>
 		</tfoot>
 		<tbody>
-		<?php foreach ($this->items as $i => $item) :
+		<?php 
+		
+require_once JPATH_ADMINISTRATOR.DS.'components'.DS.'com_bixprintshop'.DS.'classes'.DS.'bixtools.php';
+			$csv = array(implode(';',array(
+				'site-id',
+				'debiteurnummer',
+				'email',
+				'voornaam',
+				'achternaam',
+				'bedrijfsnaam',
+				'postcode',
+				'plaats',
+				'omzet',
+				'nrbestel',
+				'nrorders',
+				'korting'
+			)));
+	
+		
+		foreach ($this->items as $i => $item) :
 			$canEdit	= $canDo->get('core.edit');
 			$canChange	= $loggeduser->authorise('core.edit.state',	'com_users');
 			// If this group is super admin and this user is not super admin, $canEdit is false
@@ -108,6 +127,33 @@ $loggeduser = JFactory::getUser();
 				$canEdit	= false;
 				$canChange	= false;
 			}
+/*
+			$bixUser = BixTools::getBixUser($item->id);
+			$data = $bixUser->getProfile();
+			$totals = $bixUser->userTotals();
+			// pr($totals);
+			$defAdresID = isset($data->profile['standaardFactuur'])?$data->profile['standaardFactuur']:$bixUser->getDefaultAddresID();
+			if ($defAdresID) {
+				$adresItem = BixTools::getItem('adres',$defAdresID);
+			}
+			// pr($adresItem);
+			$sCsvData = array(
+				$item->id,
+				$data->profile['debiteurnummer'],
+				$item->email,
+				$data->profile['voornaam'],
+				$data->profile['achternaam'],
+				$data->profile['bedrijfsnaam'],
+				$adresItem->postcode,
+				$adresItem->plaats,
+				number_format(round($totals->totaalNetto,2),2,',','.'),
+				$totals->aantalBestellingen,
+				$totals->aantalOrders,
+				number_format(round($totals->totaalKorting,2),2,',','.')
+			);
+			$csv[] = implode(';',$sCsvData);
+			continue;
+			//*/
 		?>
 			<tr class="row<?php echo $i % 2; ?>">
 				<td class="center">
@@ -176,6 +222,9 @@ $loggeduser = JFactory::getUser();
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+	<?php 	
+	// print implode("<br/>\n",$csv);
+ ?>
 
 	<?php //Load the batch processing form. ?>
 	<?php if ($user->authorize('core.create', 'com_users') && $user->authorize('core.edit', 'com_users') && $user->authorize('core.edit.state', 'com_users')) : ?>
